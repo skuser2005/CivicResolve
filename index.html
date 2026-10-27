@@ -1,0 +1,2111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CivicResolve AI — Smart City Grievance & Verified Resolution Platform</title>
+  <meta name="description" content="AI-Powered Smart City Grievance, Department Coordination and Verified Resolution Platform. Every Report Matters. Every Action Is Tracked. Every Resolution Deserves Proof." />
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  
+  <!-- Leaflet CSS for Maps -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+  
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body data-theme="civic-navy">
+
+  <!-- ══════════════════════════════════════════
+       OFFICIAL DISCLAIMER BANNER
+  ══════════════════════════════════════════ -->
+  <aside class="disclaimer-banner" role="banner" aria-label="Prototype notice">
+    <div class="banner-inner container">
+      <span class="banner-badge"><i class="fa-solid fa-flask"></i> PROTOTYPE</span>
+      <span class="banner-text">
+        <strong>Independent Civic Technology Prototype</strong> — Not an Official Government Portal. Data and dispatches are simulated for civic innovation demonstration.
+      </span>
+      <button class="banner-close" id="dismissBanner" aria-label="Dismiss banner">&times;</button>
+    </div>
+  </aside>
+
+  <!-- ══════════════════════════════════════════
+       ROLE SWITCHER & LIVE DEMO CONTROLLER
+  ══════════════════════════════════════════ -->
+  <div class="role-bar" id="roleBar">
+    <div class="container role-bar-inner">
+      <div class="current-role-badge">
+        <span class="pulse-dot"></span>
+        <span class="role-indicator-text">Active Role: <strong id="activeRoleName">Citizen (Public)</strong></span>
+      </div>
+
+      <!-- Backend Connection Status Indicator -->
+      <div class="backend-status-pill connected" id="backendStatusPill" title="REST API status">
+        <span class="status-dot-mini"></span>
+        <span id="backendStatusText">Flask API: Connected (Port 5000)</span>
+      </div>
+
+      <!-- Simulated Municipal Clock -->
+      <div class="sim-clock-badge" id="simClockBadge" title="Simulated municipal timeline for testing SLA countdowns & recovery escalation triggers">
+        <i class="fa-regular fa-clock"></i>
+        <span>City Clock: <strong id="simClockDisplay">27 Oct 2026, 10:00 AM</strong></span>
+        <span class="sim-tag">SIMULATED</span>
+      </div>
+
+      <div class="role-selector-wrap">
+        <label for="roleSelect"><i class="fa-solid fa-users-gear"></i> Switch Persona:</label>
+        <select id="roleSelect" class="role-select">
+          <option value="citizen">👤 Ananya Sen (Citizen Reporter)</option>
+          <option value="worker">👷 Rajesh Kumar (Sanitation Field Worker)</option>
+          <option value="officer">🏛️ Priya Sharma (Grievance Officer, PWD)</option>
+          <option value="admin">🛡️ Dr. V. Narayanan (Municipal Commissioner)</option>
+        </select>
+      </div>
+
+      <div class="role-actions">
+        <!-- Advance Demo Time -->
+        <button class="btn btn-xs btn-advance-time" id="btnAdvanceDemoTime" title="Advance simulated clock by +12 hours to trigger deadline breaches immediately">
+          <i class="fa-solid fa-forward"></i> Advance Demo Time (+12h)
+        </button>
+        <!-- Run Civic Recovery Agent -->
+        <button class="btn btn-xs btn-recovery-trigger" id="btnRunRecoveryAgent" title="Scans actual complaints, identifies overdue cases, rejected evidence, unassigned reopened cases, and executes safe recovery actions">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Run Civic Recovery Agent
+        </button>
+        <button class="btn btn-xs btn-outline" id="btnResetDemoData" title="Reset all complaints and logs to clean default demo data">
+          <i class="fa-solid fa-rotate-left"></i> Reset Demo Data
+        </button>
+        <button class="btn btn-xs btn-ai-toggle" id="btnOpenAiInspector">
+          <i class="fa-solid fa-brain"></i> AI Agents Live Inspector
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       MAIN NAVIGATION HEADER
+  ══════════════════════════════════════════ -->
+  <header class="main-header" id="mainHeader">
+    <div class="container header-inner">
+      <a href="#home" class="brand-logo" id="brandLogo">
+        <div class="logo-emblem">
+          <i class="fa-solid fa-shield-halved"></i>
+          <span class="emblem-spark"><i class="fa-solid fa-check"></i></span>
+        </div>
+        <div class="logo-copy">
+          <div class="logo-title">CivicResolve <span class="ai-pill">AI</span></div>
+          <div class="logo-subtitle">Verified Smart City Grievance Platform</div>
+        </div>
+      </a>
+
+      <!-- Desktop Navigation -->
+      <nav class="desktop-nav" aria-label="Main Navigation">
+        <a href="#home" class="nav-link active" data-nav="home"><i class="fa-solid fa-house"></i> Home</a>
+        <a href="#track" class="nav-link" data-nav="track"><i class="fa-solid fa-magnifying-glass-location"></i> Track Complaint</a>
+        <a href="#map" class="nav-link" data-nav="map"><i class="fa-solid fa-map-location-dot"></i> City Map</a>
+        <a href="#facilities" class="nav-link" data-nav="facilities"><i class="fa-solid fa-restroom"></i> Facilities</a>
+        <a href="#dashboard" class="nav-link" data-nav="dashboard"><i class="fa-solid fa-chart-pie"></i> Public Dashboard</a>
+        <a href="#surveys" class="nav-link" data-nav="surveys"><i class="fa-solid fa-square-poll-vertical"></i> Polls</a>
+        <a href="#help" class="nav-link" data-nav="help"><i class="fa-solid fa-circle-question"></i> Help Centre</a>
+      </nav>
+
+      <!-- Utility Controls -->
+      <div class="header-utilities">
+        <!-- Language Switcher -->
+        <div class="lang-switch-dropdown">
+          <button class="lang-btn" id="langBtn" aria-label="Change Language">
+            <i class="fa-solid fa-globe"></i>
+            <span id="currentLangLabel">EN</span>
+            <i class="fa-solid fa-angle-down"></i>
+          </button>
+          <div class="lang-menu" id="langMenu">
+            <button class="lang-opt active" data-lang="en">English (EN)</button>
+            <button class="lang-opt" data-lang="hi">हिन्दी (Hindi)</button>
+          </div>
+        </div>
+
+        <!-- Notification Bell -->
+        <button class="notif-btn" id="btnNotifications" aria-label="Notifications">
+          <i class="fa-regular fa-bell"></i>
+          <span class="notif-badge" id="notifBadge">3</span>
+        </button>
+
+        <!-- User Profile Pill -->
+        <div class="user-pill" id="userPill" title="Account settings">
+          <div class="user-avatar" id="headerUserAvatar">AS</div>
+          <div class="user-info-text">
+            <span class="user-name-short" id="headerUserName">Ananya</span>
+            <span class="header-role-badge" id="headerUserRole">Citizen</span>
+          </div>
+        </div>
+
+        <!-- Log Out Button -->
+        <button class="btn btn-xs btn-logout" id="btnLogout" title="Sign out of current account">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          <span>Sign Out</span>
+        </button>
+
+        <!-- Primary CTA: Report a Problem -->
+        <a href="#report" class="btn btn-primary btn-report-cta" id="ctaReportProblem">
+          <i class="fa-solid fa-circle-plus"></i>
+          <span>Report a Problem</span>
+        </a>
+
+        <!-- Hamburger for Mobile -->
+        <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle navigation menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Nav Drawer -->
+    <div class="mobile-nav" id="mobileNav">
+      <a href="#home" class="mobile-link" data-nav="home"><i class="fa-solid fa-house"></i> Home</a>
+      <a href="#report" class="mobile-link highlight" data-nav="report"><i class="fa-solid fa-circle-plus"></i> Report a Problem</a>
+      <a href="#track" class="mobile-link" data-nav="track"><i class="fa-solid fa-magnifying-glass-location"></i> Track Complaint</a>
+      <a href="#map" class="mobile-link" data-nav="map"><i class="fa-solid fa-map-location-dot"></i> City Map</a>
+      <a href="#facilities" class="mobile-link" data-nav="facilities"><i class="fa-solid fa-restroom"></i> Civic Facilities</a>
+      <a href="#dashboard" class="mobile-link" data-nav="dashboard"><i class="fa-solid fa-chart-pie"></i> Public Dashboard</a>
+      <a href="#surveys" class="mobile-link" data-nav="surveys"><i class="fa-solid fa-square-poll-vertical"></i> Community Polls</a>
+      <a href="#help" class="mobile-link" data-nav="help"><i class="fa-solid fa-circle-question"></i> Help & FAQ</a>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════════
+       NOTIFICATION DRAWER
+  ══════════════════════════════════════════ -->
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+  <aside class="notif-drawer" id="notifDrawer" aria-label="Notifications Drawer">
+    <div class="drawer-header">
+      <div class="drawer-title">
+        <i class="fa-solid fa-bell"></i> Grievance Notifications
+      </div>
+      <div class="drawer-actions">
+        <button class="btn btn-xs btn-outline" id="markAllReadBtn">Mark All Read</button>
+        <button class="drawer-close" id="closeNotifDrawer">&times;</button>
+      </div>
+    </div>
+    <div class="notif-list" id="notifList">
+      <!-- Injected by JavaScript -->
+    </div>
+  </aside>
+
+  <!-- ══════════════════════════════════════════
+       MAIN CONTENT CONTAINER (SPA VIEW ROUTER)
+  ══════════════════════════════════════════ -->
+  <main class="main-body" id="mainContent">
+
+    <!-- ──────────────────────────────────────────
+         VIEW 0: PROFESSIONAL AUTHENTICATION & WELCOME PORTAL
+    ────────────────────────────────────────── -->
+    <section class="page-view" id="view-auth">
+      <div class="auth-page-container">
+        <div class="auth-card">
+          <!-- Auth Header / Branding -->
+          <div class="auth-brand-head">
+            <div class="auth-emblem">
+              <i class="fa-solid fa-shield-halved"></i>
+              <span class="auth-spark"><i class="fa-solid fa-check"></i></span>
+            </div>
+            <h1 class="auth-title">CivicResolve <span class="ai-pill">AI</span></h1>
+            <p class="auth-tagline">From Citizen Report to Verified Resolution</p>
+            <div class="auth-badge-proto">Official Role-Based Smart City Grievance Platform</div>
+          </div>
+
+          <!-- Quick 1-Click Demo Personas -->
+          <div class="quick-demo-personas-box">
+            <span class="quick-label"><i class="fa-solid fa-wand-magic-sparkles"></i> 1-Click Fast Evaluation Logins:</span>
+            <div class="demo-pills-row">
+              <button type="button" class="btn-demo-pill" data-demo="citizen" title="Login as Ananya Sen (Citizen Reporter)">
+                <i class="fa-solid fa-user"></i> Citizen
+              </button>
+              <button type="button" class="btn-demo-pill" data-demo="worker" title="Login as Rajesh Kumar (Sanitation Field Worker)">
+                <i class="fa-solid fa-helmet-safety"></i> Field Worker
+              </button>
+              <button type="button" class="btn-demo-pill" data-demo="officer" title="Login as Priya Sharma (Grievance Officer, PWD)">
+                <i class="fa-solid fa-building-columns"></i> Dept Employee
+              </button>
+              <button type="button" class="btn-demo-pill" data-demo="admin" title="Login as Dr. V. Narayanan (Municipal Administrator)">
+                <i class="fa-solid fa-shield-halved"></i> Administrator
+              </button>
+              <button type="button" class="btn-demo-pill pending-pill" data-demo="pending" title="Test unapproved staff role behavior">
+                <i class="fa-solid fa-user-clock"></i> Pending Staff
+              </button>
+            </div>
+          </div>
+
+          <!-- Auth Mode Tabs -->
+          <div class="auth-tabs" role="tablist">
+            <button type="button" class="auth-tab-btn active" id="tabBtnSignIn" data-tab="signin">
+              <i class="fa-solid fa-right-to-bracket"></i> Secure Sign In
+            </button>
+            <button type="button" class="auth-tab-btn" id="tabBtnRegister" data-tab="register">
+              <i class="fa-solid fa-user-plus"></i> Register Account
+            </button>
+          </div>
+
+          <!-- Error / Success Alert Box -->
+          <div class="auth-alert-box hidden" id="authAlertBox">
+            <i class="fa-solid fa-circle-exclamation alert-icon"></i>
+            <span id="authAlertText">Invalid credentials provided.</span>
+          </div>
+
+          <!-- ── SIGN IN FORM ── -->
+          <form id="loginForm" class="auth-form" novalidate>
+            <div class="form-group">
+              <label for="loginIdentifier">Email Address or Mobile Number <span class="required">*</span></label>
+              <div class="input-with-icon">
+                <i class="fa-solid fa-envelope"></i>
+                <input type="text" id="loginIdentifier" class="form-control" placeholder="e.g. ananya@civicresolve.gov or +91 98765 43210" value="ananya@civicresolve.gov" required autocomplete="username" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <div class="label-with-action">
+                <label for="loginPassword">Password <span class="required">*</span></label>
+                <a href="#forgot" class="forgot-link" id="linkForgotPassword">Forgot password?</a>
+              </div>
+              <div class="input-with-icon">
+                <i class="fa-solid fa-lock"></i>
+                <input type="password" id="loginPassword" class="form-control" placeholder="Enter account password" value="Citizen@123" required autocomplete="current-password" />
+                <button type="button" class="btn-toggle-pwd" id="btnToggleLoginPwd" aria-label="Toggle password visibility">
+                  <i class="fa-regular fa-eye"></i>
+                </button>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block btn-lg auth-submit-btn" id="btnLoginSubmit">
+              <i class="fa-solid fa-shield-check"></i> Sign In to Authorized Dashboard
+            </button>
+          </form>
+
+          <!-- ── REGISTRATION FORM ── -->
+          <form id="registerForm" class="auth-form hidden" novalidate>
+            <div class="form-group">
+              <label for="regName">Full Legal Name <span class="required">*</span></label>
+              <div class="input-with-icon">
+                <i class="fa-solid fa-user"></i>
+                <input type="text" id="regName" class="form-control" placeholder="e.g. Vikram Malhotra" required />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="regEmail">Official Email Address <span class="required">*</span></label>
+              <div class="input-with-icon">
+                <i class="fa-solid fa-envelope"></i>
+                <input type="email" id="regEmail" class="form-control" placeholder="e.g. vikram@civicresolve.gov" required />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="regPhone">Mobile Number (SMS verification) <span class="required">*</span></label>
+              <div class="input-with-icon">
+                <i class="fa-solid fa-phone"></i>
+                <input type="tel" id="regPhone" class="form-control" placeholder="+91 98765 00000" required />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="regRole">Select Account Role <span class="required">*</span></label>
+              <div class="input-with-icon">
+                <i class="fa-solid fa-id-badge"></i>
+                <select id="regRole" class="form-control" required>
+                  <option value="citizen" selected>👤 Citizen (Public Resident)</option>
+                  <option value="worker">👷 Field Worker (Sanitation / PWD / Water Crew)</option>
+                  <option value="officer">🏛️ Department Employee (Grievance Officer)</option>
+                  <option value="admin">🛡️ Administrator (System Administration)</option>
+                </select>
+              </div>
+              <div class="role-approval-disclaimer" id="roleApprovalNotice">
+                <i class="fa-solid fa-circle-info"></i>
+                <span>Citizens are activated immediately. Workers, Department Employees, and Administrators are registered under <strong>Pending Approval</strong> and must be provisioned by an Administrator before access is granted.</span>
+              </div>
+            </div>
+
+            <div class="form-group" id="regDeptGroup">
+              <label for="regDepartment">Assigned Department (For Staff)</label>
+              <select id="regDepartment" class="form-control">
+                <option value="Sanitation & Solid Waste">Sanitation & Solid Waste Management</option>
+                <option value="Roads & Infrastructure (PWD)">Roads & Infrastructure (PWD)</option>
+                <option value="Water Supply & Sewerage">Water Supply & Sewerage Board</option>
+                <option value="Electrical & Street Lighting">Electrical & Street Lighting</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="regWard">Municipal Ward / Zone</label>
+              <select id="regWard" class="form-control">
+                <option value="Ward 04 — Indiranagar">Ward 04 — Indiranagar</option>
+                <option value="Ward 07 — Malleshwaram">Ward 07 — Malleshwaram</option>
+                <option value="Ward 12 — Rajajinagar">Ward 12 — Rajajinagar</option>
+                <option value="Ward 14 — Koramangala" selected>Ward 14 — Koramangala</option>
+                <option value="Ward 18 — Whitefield">Ward 18 — Whitefield</option>
+                <option value="Ward 22 — Jayanagar">Ward 22 — Jayanagar</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="regPassword">Create Secure Password <span class="required">*</span></label>
+              <div class="input-with-icon">
+                <i class="fa-solid fa-lock"></i>
+                <input type="password" id="regPassword" class="form-control" placeholder="Minimum 6 characters" required />
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block btn-lg auth-submit-btn" id="btnRegisterSubmit">
+              <i class="fa-solid fa-user-check"></i> Complete Registration
+            </button>
+          </form>
+
+          <div class="auth-footer-notice">
+            <i class="fa-solid fa-lock"></i>
+            <span>Role-based access enforced by server PBKDF2-HMAC cryptographic verification.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ──────────────────────────────────────────
+         VIEW 0.5: DEDICATED CITIZEN DASHBOARD
+    ────────────────────────────────────────── -->
+    <section class="page-view hidden" id="view-citizen">
+      <div class="container citizen-dashboard-container">
+        <!-- Citizen Hero Banner -->
+        <div class="citizen-hero-card">
+          <div class="citizen-profile-info">
+            <div class="citizen-avatar-large" id="citizenPortalAvatar">AS</div>
+            <div>
+              <div class="portal-badge"><i class="fa-solid fa-circle-check"></i> VERIFIED CITIZEN ACCOUNT</div>
+              <h1 class="citizen-greeting" id="citizenPortalGreeting">Welcome, Ananya Sen</h1>
+              <p class="citizen-sub" id="citizenPortalWard">Ward 14 — Koramangala • Citizen Member Since Oct 2026</p>
+            </div>
+          </div>
+          <div class="citizen-hero-actions">
+            <a href="#report" class="btn btn-primary btn-lg" id="btnCitizenReportNew">
+              <i class="fa-solid fa-circle-plus"></i> Submit a New Complaint
+            </a>
+            <a href="#track" class="btn btn-outline btn-lg" id="btnCitizenTrack">
+              <i class="fa-solid fa-magnifying-glass"></i> Track My Complaints
+            </a>
+          </div>
+        </div>
+
+        <!-- Citizen KPI Cards -->
+        <div class="citizen-kpi-grid">
+          <div class="c-kpi-card">
+            <div class="c-kpi-icon total"><i class="fa-solid fa-file-lines"></i></div>
+            <div class="c-kpi-info">
+              <span class="c-kpi-num" id="cKpiTotal">0</span>
+              <span class="c-kpi-label">My Total Reports</span>
+            </div>
+          </div>
+          <div class="c-kpi-card">
+            <div class="c-kpi-icon active"><i class="fa-solid fa-clock-rotate-left"></i></div>
+            <div class="c-kpi-info">
+              <span class="c-kpi-num text-primary" id="cKpiActive">0</span>
+              <span class="c-kpi-label">Active / In Progress</span>
+            </div>
+          </div>
+          <div class="c-kpi-card">
+            <div class="c-kpi-icon pending"><i class="fa-solid fa-camera"></i></div>
+            <div class="c-kpi-info">
+              <span class="c-kpi-num text-warning" id="cKpiPendingVerif">0</span>
+              <span class="c-kpi-label">Verification Pending</span>
+            </div>
+          </div>
+          <div class="c-kpi-card">
+            <div class="c-kpi-icon resolved"><i class="fa-solid fa-circle-check"></i></div>
+            <div class="c-kpi-info">
+              <span class="c-kpi-num text-success" id="cKpiResolved">0</span>
+              <span class="c-kpi-label">Verified Resolved</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Citizen History Section -->
+        <div class="citizen-history-section">
+          <div class="section-toolbar">
+            <div>
+              <h2><i class="fa-solid fa-clock-rotate-left"></i> My Complaint History</h2>
+              <p>Transparent real-time lifecycle tracking of all grievances submitted by your account.</p>
+            </div>
+            <div class="history-filter-tabs">
+              <button class="c-filter-btn active" data-filter="all">All Complaints</button>
+              <button class="c-filter-btn" data-filter="active">In Progress</button>
+              <button class="c-filter-btn" data-filter="resolved">Resolved</button>
+            </div>
+          </div>
+
+          <div class="responsive-table-scroll">
+            <table class="citizen-table">
+              <thead>
+                <tr>
+                  <th>Tracking ID</th>
+                  <th>Category</th>
+                  <th>Description / Title</th>
+                  <th>Ward & Landmark</th>
+                  <th>Status</th>
+                  <th>Assigned Crew</th>
+                  <th>Submitted</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="citizenHistoryTableBody">
+                <!-- Dynamically populated from backend complaints scoped to this citizen -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ──────────────────────────────────────────
+         VIEW 1: PUBLIC HOME / LANDING PAGE
+    ────────────────────────────────────────── -->
+    <section class="page-view" id="view-home">
+      
+      <!-- HERO SECTION -->
+      <section class="hero-section">
+        <div class="container hero-grid">
+          <div class="hero-content">
+            <div class="hero-pill">
+              <i class="fa-solid fa-microchip"></i> Powered by 6 Specialized Civic AI Agents
+            </div>
+            <h1 class="hero-title">
+              Your City. Your Voice. <span class="gradient-text">Measurable Action.</span>
+            </h1>
+            <p class="hero-subtitle">
+              Report civic problems in seconds, track every status transition with cryptographic proof, and hold municipal departments accountable with verified resolution evidence.
+            </p>
+
+            <!-- Hero Action Buttons -->
+            <div class="hero-actions">
+              <a href="#report" class="btn btn-primary btn-lg">
+                <i class="fa-solid fa-plus-circle"></i> Report a Problem
+              </a>
+              <a href="#track" class="btn btn-secondary btn-lg">
+                <i class="fa-solid fa-magnifying-glass"></i> Track Complaint
+              </a>
+              <a href="#map" class="btn btn-glass btn-lg">
+                <i class="fa-solid fa-map"></i> Explore City Issues
+              </a>
+            </div>
+
+            <!-- Quick Search Bar -->
+            <div class="hero-search-box">
+              <label for="quickTrackInput" class="sr-only">Enter Tracking ID</label>
+              <div class="search-input-group">
+                <i class="fa-solid fa-barcode"></i>
+                <input type="text" id="quickTrackInput" placeholder="Enter Tracking ID (e.g. CR-2026-8492)" autocomplete="off" />
+                <button class="btn btn-primary btn-sm" id="btnQuickTrack">
+                  Track Now <i class="fa-solid fa-arrow-right"></i>
+                </button>
+              </div>
+              <div class="quick-examples">
+                <span>Try Demo IDs:</span>
+                <button class="sample-tag" data-id="CR-2026-8492">CR-2026-8492 (Overdue Dump)</button>
+                <button class="sample-tag" data-id="CR-2026-9104">CR-2026-9104 (Pothole Verified)</button>
+                <button class="sample-tag" data-id="CR-2026-7281">CR-2026-7281 (Water Leak)</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hero Graphic / Interactive Card Preview -->
+          <div class="hero-visual">
+            <div class="hero-card-stack">
+              <!-- Live Resolution Card Demo -->
+              <div class="hero-feature-card">
+                <div class="card-head">
+                  <span class="live-tag"><span class="pulse-dot"></span> LATEST RESOLUTION PROOF</span>
+                  <span class="card-time">42 mins ago</span>
+                </div>
+                <div class="card-body-preview">
+                  <div class="preview-title">Deep Pothole Repaired on 4th Main Junction</div>
+                  <div class="preview-location"><i class="fa-solid fa-location-dot"></i> Ward 14 — Koramangala</div>
+                  
+                  <!-- Before / After comparison preview -->
+                  <div class="side-by-side-preview">
+                    <div class="preview-thumb">
+                      <div class="thumb-tag before">BEFORE</div>
+                      <div class="thumb-img-sim pothole-before">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span>Severe Road Trench</span>
+                      </div>
+                    </div>
+                    <div class="preview-arrow">
+                      <i class="fa-solid fa-circle-arrow-right"></i>
+                    </div>
+                    <div class="preview-thumb">
+                      <div class="thumb-tag after">VERIFIED PROOF</div>
+                      <div class="thumb-img-sim pothole-after">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>Bitumen Resurfaced</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="preview-footer">
+                    <span class="status-badge status-resolved"><i class="fa-solid fa-circle-check"></i> Verified Resolved</span>
+                    <span class="stat-meta"><i class="fa-regular fa-thumbs-up"></i> 48 Citizens Supported</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Floating AI Agent Badge -->
+              <div class="floating-ai-card">
+                <div class="ai-avatar"><i class="fa-solid fa-brain"></i></div>
+                <div class="ai-info">
+                  <strong>Intake & Routing AI</strong>
+                  <span>Auto-classified & dispatched to PWD Roads Div 4 in 4.8 seconds</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PUBLIC LIVE METRICS BANNER (Real Database Calculations) -->
+      <section class="metrics-strip">
+        <div class="container">
+          <div class="metrics-header-meta">
+            <span><i class="fa-solid fa-database"></i> Live Database Transparency Metrics</span>
+            <span id="metricsPeriodLabel">Reporting Window: Current Municipal Cycle</span>
+          </div>
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="metric-icon blue"><i class="fa-solid fa-clipboard-list"></i></div>
+              <div class="metric-info">
+                <div class="metric-val" id="statTotalReports">0</div>
+                <div class="metric-label">Total Reports Submitted</div>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-icon amber"><i class="fa-solid fa-clock"></i></div>
+              <div class="metric-info">
+                <div class="metric-val" id="statOpenComplaints">0</div>
+                <div class="metric-label">Open / In Progress</div>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-icon red"><i class="fa-solid fa-fire"></i></div>
+              <div class="metric-info">
+                <div class="metric-val" id="statOverdueComplaints">0</div>
+                <div class="metric-label">Overdue Complaints</div>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-icon purple"><i class="fa-solid fa-camera"></i></div>
+              <div class="metric-info">
+                <div class="metric-val" id="statAwaitingVerification">0</div>
+                <div class="metric-label">Awaiting Verification</div>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-icon green"><i class="fa-solid fa-circle-check"></i></div>
+              <div class="metric-info">
+                <div class="metric-val" id="statResolvedComplaints">0</div>
+                <div class="metric-label">Verified Resolved</div>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-icon orange"><i class="fa-solid fa-rotate-left"></i></div>
+              <div class="metric-info">
+                <div class="metric-val" id="statReopenedComplaints">0</div>
+                <div class="metric-label">Reopened by Citizens</div>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-icon teal"><i class="fa-solid fa-stopwatch"></i></div>
+              <div class="metric-info">
+                <div class="metric-val" id="statMedianResolution">4.2h</div>
+                <div class="metric-label">Median Resolution Time</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RECENT COMMUNITY INCIDENTS -->
+      <section class="section community-incidents-section">
+        <div class="container">
+          <div class="section-head">
+            <div>
+              <div class="section-badge">PUBLIC TRANSPARENCY</div>
+              <h2 class="section-title">Recent Community Incidents</h2>
+              <p class="section-desc">Real-time civic grievances registered across the municipal wards. Support issues to boost priority.</p>
+            </div>
+            <div class="incidents-filters">
+              <button class="filter-pill active" data-filter="all">All Issues</button>
+              <button class="filter-pill" data-filter="sanitation">Sanitation</button>
+              <button class="filter-pill" data-filter="roads">Roads</button>
+              <button class="filter-pill" data-filter="water">Water</button>
+              <button class="filter-pill" data-filter="overdue">Overdue Alerts</button>
+            </div>
+          </div>
+
+          <div class="incidents-grid" id="communityIncidentsGrid">
+            <!-- Dynamically populated from CivicDB -->
+          </div>
+        </div>
+      </section>
+
+      <!-- HOW REPORTING WORKS (3-STEP PROCESS) -->
+      <section class="section how-it-works-section bg-subtle">
+        <div class="container">
+          <div class="section-head text-center">
+            <div class="section-badge">GOVERNANCE & TECHNOLOGY</div>
+            <h2 class="section-title">How Evidence-Based Resolution Works</h2>
+            <p class="section-desc">Bridging citizen reports with government accountability through verified digital proof.</p>
+          </div>
+
+          <div class="steps-grid">
+            <div class="step-card">
+              <div class="step-num">01</div>
+              <div class="step-icon"><i class="fa-solid fa-mobile-screen-button"></i></div>
+              <h3>Report with Precision</h3>
+              <p>Submit location, geo-tagged photo, and description. Our AI Intake Agent instantly validates urgency, checks duplicates, and routes to the correct department.</p>
+            </div>
+            <div class="step-card">
+              <div class="step-num">02</div>
+              <div class="step-icon"><i class="fa-solid fa-gears"></i></div>
+              <h3>Track Every Action</h3>
+              <p>Receive an immutable tracking ID. Follow each transition from intake to assignment, deadline countdown, and field dispatch with transparent updates.</p>
+            </div>
+            <div class="step-card">
+              <div class="step-num">03</div>
+              <div class="step-icon"><i class="fa-solid fa-certificate"></i></div>
+              <h3>Resolution Deserves Proof</h3>
+              <p>Field workers must submit photographic proof of completed work. Department officers and citizens verify before the grievance is officially resolved.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SUPPORTED CIVIC CATEGORIES -->
+      <section class="section categories-showcase">
+        <div class="container">
+          <div class="section-head text-center">
+            <div class="section-badge">COVERAGE</div>
+            <h2 class="section-title">Supported Civic Problem Categories</h2>
+            <p class="section-desc">Comprehensive municipal coverage mapped directly to city maintenance departments.</p>
+          </div>
+
+          <div class="category-cards-grid">
+            <div class="civic-cat-box">
+              <div class="cat-header">
+                <i class="fa-solid fa-trash-can cat-icon sanitation"></i>
+                <div>
+                  <h4>Sanitation & Cleanliness</h4>
+                  <span>Solid Waste Management</span>
+                </div>
+              </div>
+              <ul class="cat-list">
+                <li><i class="fa-solid fa-check"></i> Overflowing garbage dumps & dustbins</li>
+                <li><i class="fa-solid fa-check"></i> Missed garbage collection vehicle</li>
+                <li><i class="fa-solid fa-check"></i> Street sweeping incomplete</li>
+                <li><i class="fa-solid fa-check"></i> Public toilet blockages & hygiene</li>
+                <li><i class="fa-solid fa-check"></i> Dead animal removal</li>
+              </ul>
+              <a href="#report?category=sanitation" class="btn btn-sm btn-outline cat-cta">Report Sanitation Issue</a>
+            </div>
+
+            <div class="civic-cat-box">
+              <div class="cat-header">
+                <i class="fa-solid fa-road cat-icon roads"></i>
+                <div>
+                  <h4>Roads & Infrastructure</h4>
+                  <span>Public Works Department (PWD)</span>
+                </div>
+              </div>
+              <ul class="cat-list">
+                <li><i class="fa-solid fa-check"></i> Dangerous potholes & trenches</li>
+                <li><i class="fa-solid fa-check"></i> Damaged footpaths & walkways</li>
+                <li><i class="fa-solid fa-check"></i> Broken or unlit streetlights</li>
+                <li><i class="fa-solid fa-check"></i> Damaged road dividers & signs</li>
+                <li><i class="fa-solid fa-check"></i> Unsafe public infrastructure</li>
+              </ul>
+              <a href="#report?category=roads" class="btn btn-sm btn-outline cat-cta">Report Road Issue</a>
+            </div>
+
+            <div class="civic-cat-box">
+              <div class="cat-header">
+                <i class="fa-solid fa-droplet cat-icon water"></i>
+                <div>
+                  <h4>Water & Drainage</h4>
+                  <span>Water Supply & Sewerage Board</span>
+                </div>
+              </div>
+              <ul class="cat-list">
+                <li><i class="fa-solid fa-check"></i> Potable water pipeline bursts</li>
+                <li><i class="fa-solid fa-check"></i> Blocked storm drains & manholes</li>
+                <li><i class="fa-solid fa-check"></i> Raw sewage overflow in streets</li>
+                <li><i class="fa-solid fa-check"></i> Monsoon waterlogging hotspots</li>
+                <li><i class="fa-solid fa-check"></i> Damaged community water taps</li>
+              </ul>
+              <a href="#report?category=water" class="btn btn-sm btn-outline cat-cta">Report Water Issue</a>
+            </div>
+
+            <div class="civic-cat-box">
+              <div class="cat-header">
+                <i class="fa-solid fa-tree-city cat-icon other"></i>
+                <div>
+                  <h4>Parks & Public Spaces</h4>
+                  <span>Civic Amenities & Horticulture</span>
+                </div>
+              </div>
+              <ul class="cat-list">
+                <li><i class="fa-solid fa-check"></i> Damaged public park equipment</li>
+                <li><i class="fa-solid fa-check"></i> Accessibility barriers & wheelchair ramps</li>
+                <li><i class="fa-solid fa-check"></i> Fallen tree branches blocking roads</li>
+                <li><i class="fa-solid fa-check"></i> Public bench & fencing vandalism</li>
+                <li><i class="fa-solid fa-check"></i> Other municipal service requests</li>
+              </ul>
+              <a href="#report?category=other" class="btn btn-sm btn-outline cat-cta">Report Public Amenity</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- REPEAT-PROBLEM HOTSPOTS & RESOLUTION SLIDER -->
+      <section class="section hotspots-section bg-subtle">
+        <div class="container">
+          <div class="split-columns">
+            <div class="split-col">
+              <div class="section-badge">ACCOUNTABILITY</div>
+              <h2 class="section-title">Repeat Problem Hotspots</h2>
+              <p class="section-desc">Our AI engine tracks repeat incidents at identical coordinates to flag chronic infrastructure failures requiring structural intervention.</p>
+              
+              <div class="hotspot-list" id="repeatHotspotList">
+                <!-- Dynamically generated -->
+              </div>
+            </div>
+
+            <div class="split-col">
+              <div class="section-badge">PROOF VAULT</div>
+              <h2 class="section-title">Verified Resolution Evidence</h2>
+              <p class="section-desc">No grievance is marked "Resolved" without verifiable completion evidence approved by municipal supervisors.</p>
+              
+              <!-- Interactive Before / After Comparison Showcase -->
+              <div class="proof-card-featured">
+                <div class="proof-header">
+                  <div>
+                    <span class="proof-id">CR-2026-9104</span>
+                    <h4>Ward 7 — Main Market Trench Repair</h4>
+                  </div>
+                  <span class="badge-verified"><i class="fa-solid fa-shield-check"></i> Verified by PWD Div</span>
+                </div>
+                <div class="comparison-container">
+                  <div class="comp-box before">
+                    <span class="comp-label">ORIGINAL COMPLAINT</span>
+                    <div class="comp-graphic before-photo">
+                      <i class="fa-solid fa-circle-exclamation"></i>
+                      <span>Dangerous 2ft trench left open near school gate</span>
+                    </div>
+                  </div>
+                  <div class="comp-box after">
+                    <span class="comp-label">OFFICER-VERIFIED RESOLUTION</span>
+                    <div class="comp-graphic after-photo">
+                      <i class="fa-solid fa-circle-check"></i>
+                      <span>Compacted aggregate & hot-mix asphalt restored</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="proof-footer">
+                  <div class="proof-notes">
+                    <strong>Work Note:</strong> "Completed by Field Crew #8 using 420kg asphalt mix. Inspected & approved by Junior Engineer."
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FREQUENTLY ASKED QUESTIONS -->
+      <section class="section faq-section">
+        <div class="container">
+          <div class="section-head text-center">
+            <div class="section-badge">HELP & GUIDANCE</div>
+            <h2 class="section-title">Frequently Asked Questions</h2>
+            <p class="section-desc">Clear answers on tracking, privacy, deadlines, and verification procedures.</p>
+          </div>
+
+          <div class="faq-accordion" id="faqAccordion">
+            <details class="faq-item" open>
+              <summary>How do I track my complaint without logging in?</summary>
+              <div class="faq-answer">
+                Every report generates a unique, non-guessable Tracking ID (e.g., <code>CR-2026-8492</code>). You can paste this code into the "Track Complaint" search bar anytime on desktop or mobile to view full real-time progress and photos.
+              </div>
+            </details>
+            <details class="faq-item">
+              <summary>What happens if a field team marks a complaint resolved but the problem isn't fixed?</summary>
+              <div class="faq-answer">
+                You have the guaranteed right to <strong>Reopen</strong> the complaint within 7 days of resolution. When reopened, the case is automatically escalated with High priority to the Senior Grievance Officer and the previous field worker's department head.
+              </div>
+            </details>
+            <details class="faq-item">
+              <summary>Is my exact home address or phone number visible to the public?</summary>
+              <div class="faq-answer">
+                <strong>No.</strong> Your privacy is strictly protected. Public incident boards only display general ward and landmark information. Personal contact numbers and exact residential details are stored encrypted and accessible only to authorized municipal field officers for dispatch clarification.
+              </div>
+            </details>
+            <details class="faq-item">
+              <summary>How does the AI Duplicate Detection Agent work?</summary>
+              <div class="faq-answer">
+                When you enter your complaint description and location, our AI Duplicate Detection Agent compares geographical coordinates, category, and keyword semantics against existing open reports. If a match is found, you can 1-click "Support Existing Report" to boost its priority instead of creating redundant paperwork.
+              </div>
+            </details>
+            <details class="faq-item">
+              <summary>What does the prototype disclaimer mean?</summary>
+              <div class="faq-answer">
+                CivicResolve AI is an independent civic technology research prototype engineered to demonstrate next-generation transparent governance. Dispatches and status workflows are simulated within this application environment unless an authorized municipal API is integrated.
+              </div>
+            </details>
+          </div>
+        </div>
+      </section>
+
+    </section>
+
+    <!-- ──────────────────────────────────────────
+         VIEW 2: REPORT A PROBLEM (7-STEP WIZARD)
+    ────────────────────────────────────────── -->
+    <section class="page-view hidden" id="view-report">
+      <!-- Loading transition screen for automatic fresh complaint initialization -->
+      <div class="next-complaint-loading-overlay hidden" id="loadingTransitionOverlay">
+        <div class="loading-box">
+          <div class="loading-spinner"></div>
+          <h3>Preparing a New Complaint Form...</h3>
+          <p id="loadingTransitionText">Resetting intake state, clearing previous attachments, and initializing clean cryptographic transaction.</p>
+          <div class="loading-progress-bar"><div class="loading-progress-fill"></div></div>
+        </div>
+      </div>
+
+      <div class="container report-wizard-container">
+        
+        <!-- Banner displayed when submitting subsequent complaints -->
+        <div class="next-complaint-banner hidden" id="nextComplaintBanner">
+          <div class="banner-content">
+            <i class="fa-solid fa-circle-check text-success"></i>
+            <div>
+              <strong id="bannerSuccessTitle">Complaint Registered Successfully!</strong>
+              <span id="bannerSuccessSub">A clean, fresh form is ready for Complaint #2. Previous details and media have been cleared.</span>
+            </div>
+          </div>
+          <div class="banner-actions">
+            <button type="button" class="btn btn-xs btn-outline" id="btnBannerTrackPrev"><i class="fa-solid fa-barcode"></i> Track Submitted Case</button>
+            <a href="#citizen" class="btn btn-xs btn-secondary" id="btnBannerGoDashboard"><i class="fa-solid fa-house-user"></i> Go to Dashboard</a>
+          </div>
+        </div>
+
+        <div class="wizard-header">
+          <div class="wizard-title-group">
+            <span class="section-badge"><i class="fa-solid fa-bullhorn"></i> CITIZEN REPORTING PORTAL</span>
+            <h1 class="page-title" id="reportWizardHeading">Report a Civic Problem</h1>
+            <p class="page-desc" id="reportWizardSubheading">Complete the guided wizard below to register your grievance. Our AI will validate category, check duplicates, and route to the responsible department.</p>
+          </div>
+          
+          <!-- Stepper Progress Bar -->
+          <div class="stepper-nav" id="stepperNav" role="tablist">
+            <button class="step-nav-btn active" data-step="1"><span class="step-circle">1</span><span class="step-title">Category</span></button>
+            <button class="step-nav-btn" data-step="2"><span class="step-circle">2</span><span class="step-title">Describe</span></button>
+            <button class="step-nav-btn" data-step="3"><span class="step-circle">3</span><span class="step-title">Location</span></button>
+            <button class="step-nav-btn" data-step="4"><span class="step-circle">4</span><span class="step-title">Evidence</span></button>
+            <button class="step-nav-btn" data-step="5"><span class="step-circle">5</span><span class="step-title">Privacy</span></button>
+            <button class="step-nav-btn" data-step="6"><span class="step-circle">6</span><span class="step-title">Duplicates</span></button>
+            <button class="step-nav-btn" data-step="7"><span class="step-circle">7</span><span class="step-title">Review</span></button>
+          </div>
+        </div>
+
+        <form id="grievanceForm" class="wizard-card" novalidate>
+
+          <!-- ── STEP 1: CATEGORY SELECTION ── -->
+          <div class="wizard-step active" id="wizardStep1" data-step="1">
+            <div class="step-heading">
+              <span class="step-indicator">Step 1 of 7</span>
+              <h2>Select Problem Category</h2>
+              <p>Choose the department and category that best describes the municipal issue.</p>
+            </div>
+
+            <div class="category-tabs">
+              <button type="button" class="cat-group-btn active" data-group="sanitation">
+                <i class="fa-solid fa-trash-can"></i> Sanitation & Cleanliness
+              </button>
+              <button type="button" class="cat-group-btn" data-group="roads">
+                <i class="fa-solid fa-road"></i> Roads & Infrastructure
+              </button>
+              <button type="button" class="cat-group-btn" data-group="water">
+                <i class="fa-solid fa-droplet"></i> Water & Drainage
+              </button>
+              <button type="button" class="cat-group-btn" data-group="other">
+                <i class="fa-solid fa-tree-city"></i> Other Civic Services
+              </button>
+            </div>
+
+            <!-- Subcategory Options Grid -->
+            <div class="subcategories-grid" id="subcategoryGrid">
+              <!-- Dynamically populated per group -->
+            </div>
+
+            <input type="hidden" id="selectedCategory" name="category" value="Garbage Dump" />
+            <input type="hidden" id="selectedDepartment" name="department" value="Sanitation & Solid Waste" />
+
+            <div class="wizard-actions">
+              <button type="button" class="btn btn-outline" disabled>Back</button>
+              <button type="button" class="btn btn-primary btn-next-step" data-next="2">
+                Continue to Details <i class="fa-solid fa-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- ── STEP 2: DESCRIBE THE ISSUE ── -->
+          <div class="wizard-step" id="wizardStep2" data-step="2">
+            <div class="step-heading">
+              <span class="step-indicator">Step 2 of 7</span>
+              <h2>Describe the Issue</h2>
+              <p>Provide clear details to help municipal engineers understand the situation.</p>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group full-width">
+                <label for="reportTitle">Issue Title <span class="required">*</span></label>
+                <input type="text" id="reportTitle" class="form-control" placeholder="e.g. Large open garbage pile near government school entrance" required />
+                <span class="field-hint">A concise, descriptive summary of the problem.</span>
+              </div>
+
+              <div class="form-group full-width">
+                <div class="label-with-action">
+                  <label for="reportDescription">Detailed Description <span class="required">*</span></label>
+                  <div class="speech-controls-group">
+                    <button type="button" class="btn btn-xs btn-outline btn-dictate" id="btnSpeechToText" title="Voice-to-Text Dictation">
+                      <i class="fa-solid fa-microphone"></i> Dictate (Speech to Text)
+                    </button>
+                    <span class="speech-status-pill hidden" id="speechStatusPill"><span class="pulse-dot"></span> Listening...</span>
+                  </div>
+                </div>
+                <textarea id="reportDescription" class="form-control" rows="4" placeholder="Describe the severity, duration, and any hazards (e.g. Foul smell spreading into classrooms, dogs scattering waste onto the main road for the past 3 days)." required></textarea>
+                <span class="field-hint">Supports voice dictation via microphone or direct typing.</span>
+              </div>
+
+              <div class="form-group">
+                <label for="reportStartDate">When did the problem begin?</label>
+                <input type="date" id="reportStartDate" class="form-control" />
+              </div>
+
+              <div class="form-group">
+                <label for="reportUrgency">Estimated Urgency Level <span class="required">*</span></label>
+                <select id="reportUrgency" class="form-control">
+                  <option value="Normal" selected>Normal — Routine municipal priority</option>
+                  <option value="Low">Low — Minor cosmetic or non-blocking</option>
+                  <option value="High">High — Impeding daily transit / commercial access</option>
+                  <option value="Critical">Critical — Immediate health or safety danger</option>
+                </select>
+                <span class="field-hint">Citizen estimate; verified by municipal intake agent.</span>
+              </div>
+
+              <div class="form-group">
+                <label for="affectedCount">Estimated People Affected (Optional)</label>
+                <select id="affectedCount" class="form-control">
+                  <option value="1-10">1 – 10 residents</option>
+                  <option value="10-50" selected>10 – 50 residents/commuters</option>
+                  <option value="50-200">50 – 200 (Entire street/market)</option>
+                  <option value="200+">200+ (Neighborhood or transit hub)</option>
+                </select>
+              </div>
+
+              <div class="form-group full-width checkbox-card-row">
+                <label class="checkbox-card">
+                  <input type="checkbox" id="isRecurring" />
+                  <div class="checkbox-card-body">
+                    <strong><i class="fa-solid fa-arrows-rotate"></i> Recurring Problem?</strong>
+                    <span>Has this exact issue occurred and been fixed here previously?</span>
+                  </div>
+                </label>
+
+                <label class="checkbox-card">
+                  <input type="checkbox" id="isSafetyConcern" />
+                  <div class="checkbox-card-body">
+                    <strong><i class="fa-solid fa-triangle-exclamation"></i> Immediate Safety Concern?</strong>
+                    <span>Exposed live wiring, open manhole, or vehicle collision risk.</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <div class="wizard-actions">
+              <button type="button" class="btn btn-outline btn-prev-step" data-prev="1">
+                <i class="fa-solid fa-arrow-left"></i> Back
+              </button>
+              <button type="button" class="btn btn-primary btn-next-step" data-next="3">
+                Continue to Location <i class="fa-solid fa-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- ── STEP 3: LOCATION ── -->
+          <div class="wizard-step" id="wizardStep3" data-step="3">
+            <div class="step-heading">
+              <span class="step-indicator">Step 3 of 7</span>
+              <h2>Location & Ward Assignment</h2>
+              <p>Pin the exact coordinates to ensure field crews reach the correct site without delay.</p>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="locWard">Municipal Ward <span class="required">*</span></label>
+                <select id="locWard" class="form-control" required>
+                  <option value="Ward 04 — Indiranagar">Ward 04 — Indiranagar</option>
+                  <option value="Ward 07 — Malleshwaram">Ward 07 — Malleshwaram</option>
+                  <option value="Ward 12 — Rajajinagar">Ward 12 — Rajajinagar</option>
+                  <option value="Ward 14 — Koramangala" selected>Ward 14 — Koramangala</option>
+                  <option value="Ward 18 — Whitefield">Ward 18 — Whitefield</option>
+                  <option value="Ward 22 — Jayanagar">Ward 22 — Jayanagar</option>
+                  <option value="Ward 26 — HSR Layout">Ward 26 — HSR Layout</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="locLocality">Locality / Sector <span class="required">*</span></label>
+                <input type="text" id="locLocality" class="form-control" placeholder="e.g. 5th Block, 80 Feet Road" value="5th Block, 80 Feet Road" required />
+              </div>
+
+              <div class="form-group full-width">
+                <label for="locLandmark">Nearest Public Landmark <span class="required">*</span></label>
+                <input type="text" id="locLandmark" class="form-control" placeholder="e.g. Opposite BDA Complex, near Post Office" value="Opposite BDA Complex, near Post Office" required />
+                <span class="field-hint">Crucial for field crews if GPS signal is weak in alleyways.</span>
+              </div>
+
+              <!-- Interactive Location Picker Map -->
+              <div class="form-group full-width">
+                <div class="map-picker-toolbar">
+                  <span><i class="fa-solid fa-location-crosshairs"></i> Drag marker or click map to set coordinates</span>
+                  <button type="button" class="btn btn-xs btn-outline" id="btnGpsLocate">
+                    <i class="fa-solid fa-satellite-dish"></i> Use My GPS Location
+                  </button>
+                </div>
+                <div id="pickerMap" class="picker-map-canvas"></div>
+                <div class="coords-display">
+                  <span>Latitude: <strong id="pickedLat">12.9352</strong></span>
+                  <span>Longitude: <strong id="pickedLng">77.6245</strong></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="wizard-actions">
+              <button type="button" class="btn btn-outline btn-prev-step" data-prev="2">
+                <i class="fa-solid fa-arrow-left"></i> Back
+              </button>
+              <button type="button" class="btn btn-primary btn-next-step" data-next="4">
+                Continue to Evidence <i class="fa-solid fa-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- ── STEP 4: ATTACH MULTIMODAL EVIDENCE ── -->
+          <div class="wizard-step" id="wizardStep4" data-step="4">
+            <div class="step-heading">
+              <span class="step-indicator">Step 4 of 7</span>
+              <h2>Attach Multimodal Evidence</h2>
+              <p>Reports with verified photos, videos, or voice notes are prioritized and dispatched 3x faster by municipal crews.</p>
+            </div>
+
+            <!-- Multimodal Capture & Upload Toolbar -->
+            <div class="multimodal-toolbar-card">
+              <div class="mm-toolbar-head">
+                <span><i class="fa-solid fa-photo-film"></i> Supported Multimodal Inputs:</span>
+                <span class="mm-supported-badge"><i class="fa-solid fa-circle-check"></i> Camera • Gallery • Video • Voice Note • Audio File</span>
+              </div>
+              <div class="multimodal-btns-grid">
+                <!-- 1. Camera Capture -->
+                <label class="mm-btn" for="mediaCameraInput" title="Capture live photo with camera">
+                  <i class="fa-solid fa-camera"></i>
+                  <span>Camera</span>
+                  <input type="file" id="mediaCameraInput" accept="image/*" capture="environment" class="file-input-hidden" />
+                </label>
+
+                <!-- 2. Photo Gallery -->
+                <label class="mm-btn" for="mediaGalleryInput" title="Select photos from device gallery">
+                  <i class="fa-regular fa-images"></i>
+                  <span>Gallery</span>
+                  <input type="file" id="mediaGalleryInput" accept="image/*" multiple class="file-input-hidden" />
+                </label>
+
+                <!-- 3. Record / Select Video -->
+                <label class="mm-btn" for="mediaVideoInput" title="Record or select video evidence">
+                  <i class="fa-solid fa-video"></i>
+                  <span>Video</span>
+                  <input type="file" id="mediaVideoInput" accept="video/*" class="file-input-hidden" />
+                </label>
+
+                <!-- 4. Voice Note Recorder -->
+                <button type="button" class="mm-btn mm-btn-mic" id="btnVoiceRecordToggle" title="Record live voice note using microphone">
+                  <i class="fa-solid fa-microphone" id="voiceRecIcon"></i>
+                  <span id="voiceRecLabel">Voice Note</span>
+                </button>
+
+                <!-- 5. Upload Audio File -->
+                <label class="mm-btn" for="mediaAudioFileInput" title="Upload existing audio recording">
+                  <i class="fa-solid fa-file-audio"></i>
+                  <span>Audio File</span>
+                  <input type="file" id="mediaAudioFileInput" accept="audio/*" class="file-input-hidden" />
+                </label>
+              </div>
+
+              <!-- Voice Note Live Recorder Bar -->
+              <div class="voice-recorder-bar hidden" id="voiceRecorderBar">
+                <div class="recording-indicator">
+                  <span class="rec-dot-pulse"></span>
+                  <span class="rec-label">RECORDING VOICE NOTE...</span>
+                  <span class="rec-timer" id="voiceRecTimer">00:00</span>
+                </div>
+                <button type="button" class="btn btn-xs btn-danger" id="btnStopVoiceRecord">
+                  <i class="fa-solid fa-stop"></i> Stop & Attach Recording
+                </button>
+              </div>
+            </div>
+
+            <!-- Fast Preset Demo Photos for Quick Demonstration -->
+            <div class="demo-photo-presets">
+              <span class="presets-title"><i class="fa-solid fa-wand-magic-sparkles"></i> Or select a realistic municipal demo photo:</span>
+              <div class="presets-grid">
+                <button type="button" class="photo-preset-btn active" data-img="dump">
+                  <i class="fa-solid fa-trash-can"></i>
+                  <span>Overflowing Waste</span>
+                </button>
+                <button type="button" class="photo-preset-btn" data-img="pothole">
+                  <i class="fa-solid fa-road"></i>
+                  <span>Severe Pothole</span>
+                </button>
+                <button type="button" class="photo-preset-btn" data-img="water">
+                  <i class="fa-solid fa-droplet"></i>
+                  <span>Water Pipeline Leak</span>
+                </button>
+                <button type="button" class="photo-preset-btn" data-img="streetlight">
+                  <i class="fa-solid fa-lightbulb"></i>
+                  <span>Damaged Streetlight</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Attached Photos & Audio Previews List -->
+            <div class="attached-previews" id="attachedPreviews">
+              <div class="preview-item" id="defaultDemoPreviewItem">
+                <div class="preview-thumb-box" id="activeEvidencePreview">
+                  <div class="mock-evidence-visual dump-visual">
+                    <i class="fa-solid fa-trash-can"></i>
+                    <span>Simulated Evidence Photo: Overflowing Municipal Dump</span>
+                  </div>
+                </div>
+                <div class="preview-details">
+                  <strong id="previewFileName">evidence_waste_ward14.jpg</strong>
+                  <span id="previewFileSize">1.8 MB • Timestamp Attached • EXIF Verified</span>
+                  <div class="preview-badge-status"><i class="fa-solid fa-circle-check"></i> Ready for Upload</div>
+                </div>
+                <button type="button" class="btn btn-xs btn-outline text-danger" id="btnRemoveEvidence">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="wizard-actions">
+              <button type="button" class="btn btn-outline btn-prev-step" data-prev="3">
+                <i class="fa-solid fa-arrow-left"></i> Back
+              </button>
+              <button type="button" class="btn btn-primary btn-next-step" data-next="5">
+                Continue to Privacy <i class="fa-solid fa-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- ── STEP 5: CONTACT & PRIVACY ── -->
+          <div class="wizard-step" id="wizardStep5" data-step="5">
+            <div class="step-heading">
+              <span class="step-indicator">Step 5 of 7</span>
+              <h2>Contact & Privacy Settings</h2>
+              <p>Control how your identity is displayed to the public and how you receive status alerts.</p>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group full-width">
+                <label>Public Identity Preference</label>
+                <div class="radio-card-grid">
+                  <label class="radio-card">
+                    <input type="radio" name="displayIdentity" value="named" checked />
+                    <div class="radio-card-content">
+                      <strong><i class="fa-solid fa-user-check"></i> Verified Citizen Profile</strong>
+                      <span>Display my first name & ward on public community board</span>
+                    </div>
+                  </label>
+                  <label class="radio-card">
+                    <input type="radio" name="displayIdentity" value="anonymous" />
+                    <div class="radio-card-content">
+                      <strong><i class="fa-solid fa-user-secret"></i> Anonymous Citizen</strong>
+                      <span>Display as "Resident of Ward 14" to public viewers</span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="contactEmail">Notification Email</label>
+                <input type="email" id="contactEmail" class="form-control" value="ananya.sen@example.com" />
+                <span class="field-hint">Never published publicly. Used only for status receipts.</span>
+              </div>
+
+              <div class="form-group">
+                <label for="contactPhone">Mobile Number (SMS Updates)</label>
+                <input type="tel" id="contactPhone" class="form-control" value="+91 98765 43210" />
+                <span class="field-hint">Required for field worker contact if location is blocked.</span>
+              </div>
+
+              <div class="form-group full-width consent-box">
+                <label class="consent-item">
+                  <input type="checkbox" id="consentUpdates" checked />
+                  <span>I consent to receiving status transition notifications via email & in-app alerts.</span>
+                </label>
+                <label class="consent-item">
+                  <input type="checkbox" id="consentRedacted" checked />
+                  <span>I agree that uploaded evidence may be displayed publicly with faces/numbers redacted.</span>
+                </label>
+                <label class="consent-item">
+                  <input type="checkbox" id="consentStats" checked />
+                  <span>I consent to the use of anonymized grievance data for municipal transparency indices.</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="wizard-actions">
+              <button type="button" class="btn btn-outline btn-prev-step" data-prev="4">
+                <i class="fa-solid fa-arrow-left"></i> Back
+              </button>
+              <button type="button" class="btn btn-primary" id="btnRunDuplicateCheck">
+                Check Duplicates with AI <i class="fa-solid fa-brain"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- ── STEP 6: DUPLICATE CHECK ── -->
+          <div class="wizard-step" id="wizardStep6" data-step="6">
+            <div class="step-heading">
+              <span class="step-indicator">Step 6 of 7</span>
+              <h2>AI Duplicate Detection Check</h2>
+              <p>Our Duplicate Agent analyzes active cases nearby to prevent duplicated work orders.</p>
+            </div>
+
+            <div class="duplicate-check-results" id="duplicateResultsContainer">
+              <!-- Dynamically populated by AI Duplicate Agent -->
+            </div>
+
+            <div class="wizard-actions">
+              <button type="button" class="btn btn-outline btn-prev-step" data-prev="5">
+                <i class="fa-solid fa-arrow-left"></i> Back
+              </button>
+              <button type="button" class="btn btn-primary btn-next-step" data-next="7">
+                Proceed as New Grievance <i class="fa-solid fa-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- ── STEP 7: REVIEW & SUBMIT ── -->
+          <div class="wizard-step" id="wizardStep7" data-step="7">
+            <div class="step-heading">
+              <span class="step-indicator">Step 7 of 7</span>
+              <h2>Review & Submit Complaint</h2>
+              <p>Verify all details before registering this grievance in the municipal ledger.</p>
+            </div>
+
+            <!-- Summary Card -->
+            <div class="review-summary-card" id="reviewSummaryCard">
+              <!-- Dynamically rendered -->
+            </div>
+
+            <!-- AI Intake Recommendation Box -->
+            <div class="ai-intake-badge-card" id="aiIntakePreviewCard">
+              <div class="ai-card-header">
+                <i class="fa-solid fa-brain"></i>
+                <strong>AI Intake Agent Pre-Validation</strong>
+                <span class="badge badge-success">Confidence: 96%</span>
+              </div>
+              <p class="ai-card-body" id="aiIntakeReasoning">
+                Analyzing category match, safety markers, and routing protocol...
+              </p>
+            </div>
+
+            <div class="wizard-actions">
+              <button type="button" class="btn btn-outline btn-prev-step" data-prev="6">
+                <i class="fa-solid fa-arrow-left"></i> Back
+              </button>
+              <button type="button" class="btn btn-success btn-lg" id="btnFinalSubmitComplaint">
+                <i class="fa-solid fa-paper-plane"></i> Submit Grievance Now
+              </button>
+            </div>
+          </div>
+
+        </form>
+
+      </div>
+    </section>
+
+    <!-- ──────────────────────────────────────────
+         VIEW 3: TRACK COMPLAINT & LIFECYCLE
+    ────────────────────────────────────────── -->
+    <section class="page-view hidden" id="view-track">
+      <div class="container track-container">
+        
+        <!-- Search Header -->
+        <div class="track-search-header">
+          <span class="section-badge"><i class="fa-solid fa-magnifying-glass"></i> GRIEVANCE TRACKING</span>
+          <h1 class="page-title">Track Complaint Status</h1>
+          <p class="page-desc">Enter your unique tracking ID to view real-time department updates, field dispatch logs, and verified resolution evidence.</p>
+
+          <div class="track-input-bar">
+            <div class="input-icon-wrap">
+              <i class="fa-solid fa-barcode"></i>
+              <input type="text" id="trackSearchInput" placeholder="Enter Tracking ID (e.g. CR-2026-8492)" />
+            </div>
+            <button class="btn btn-primary" id="btnSearchTracking">
+              <i class="fa-solid fa-search"></i> Search Case
+            </button>
+          </div>
+
+          <!-- Quick Pill Selectors -->
+          <div class="quick-track-pills">
+            <span>Quick Case Studies:</span>
+            <button class="pill-btn" data-track-id="CR-2026-8492">CR-2026-8492 (Overdue Dump)</button>
+            <button class="pill-btn" data-track-id="CR-2026-9104">CR-2026-9104 (Pothole Verified)</button>
+            <button class="pill-btn" data-track-id="CR-2026-7281">CR-2026-7281 (In Progress Water Leak)</button>
+            <button class="pill-btn" data-track-id="CR-2026-6140">CR-2026-6140 (Awaiting Verification)</button>
+          </div>
+        </div>
+
+        <!-- Case Detail File Display -->
+        <div class="case-file-wrapper" id="caseFileWrapper">
+          <!-- Dynamically populated by JavaScript -->
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ──────────────────────────────────────────
+         VIEW 4: INTERACTIVE CITY MAP & HOTSPOTS
+    ────────────────────────────────────────── -->
+    <section class="page-view hidden" id="view-map">
+      <div class="container-fluid map-page-layout">
+        <aside class="map-sidebar">
+          <div class="map-sidebar-head">
+            <h3><i class="fa-solid fa-map-location-dot"></i> City Incident Map</h3>
+            <p>Geospatial distribution of active civic complaints and resolution clusters.</p>
+          </div>
+
+          <div class="map-filters">
+            <label class="filter-label">Filter by Department</label>
+            <select id="mapFilterDept" class="form-control form-control-sm">
+              <option value="all">All Departments</option>
+              <option value="Sanitation & Solid Waste">Sanitation & Solid Waste</option>
+              <option value="Roads & Infrastructure (PWD)">Roads & Infrastructure (PWD)</option>
+              <option value="Water Supply & Sewerage">Water Supply & Sewerage</option>
+              <option value="Electrical & Street Lighting">Electrical & Street Lighting</option>
+            </select>
+
+            <label class="filter-label">Filter by Status</label>
+            <select id="mapFilterStatus" class="form-control form-control-sm">
+              <option value="all">All Statuses</option>
+              <option value="Open">Open / Intake</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Awaiting Verification">Awaiting Verification</option>
+              <option value="Resolved">Verified Resolved</option>
+            </select>
+          </div>
+
+          <div class="map-incident-list" id="mapIncidentList">
+            <!-- Dynamically populated incident cards -->
+          </div>
+        </aside>
+
+        <div class="map-canvas-wrapper">
+          <div id="cityFullMap" class="city-leaflet-map"></div>
+          <div class="map-legend">
+            <span class="legend-item"><span class="dot sanitation"></span> Sanitation</span>
+            <span class="legend-item"><span class="dot roads"></span> Roads/PWD</span>
+            <span class="legend-item"><span class="dot water"></span> Water/Drainage</span>
+            <span class="legend-item"><span class="dot resolved"></span> Resolved</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ──────────────────────────────────────────
+         VIEW 5: CIVIC FACILITIES LOCATOR
+    ────────────────────────────────────────── -->
+    <section class="page-view hidden" id="view-facilities">
+      <div class="container facilities-container">
+        <div class="section-head">
+          <div>
+            <span class="section-badge"><i class="fa-solid fa-restroom"></i> CIVIC AMENITIES</span>
+            <h1 class="page-title">Public Facility Locator</h1>
+            <p class="section-desc">Locate sanitized public toilets, accessible restrooms, waste bins, and water points across the municipality.</p>
+          </div>
+          <div class="facility-type-tabs">
+            <button class="fac-tab active" data-type="all">All Facilities</button>
+            <button class="fac-tab" data-type="toilet">Public Toilets</button>
+            <button class="fac-tab" data-type="accessible">Accessible Restrooms</button>
+            <button class="fac-tab" data-type="bin">Public Bins</button>
+            <button class="fac-tab" data-type="water">Water Points</button>
+          </div>
+        </div>
+
+        <div class="facilities-layout">
+          <div class="facilities-grid" id="facilitiesGrid">
+            <!-- Dynamically populated -->
+          </div>
+          <div class="facilities-map-box">
+            <div id="facilitiesMap" class="facilities-map-canvas"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ──────────────────────────────────────────
+         VIEW 6: PUBLIC TRANSPARENCY DASHBOARD
+    ────────────────────────────────────────── -->
+    <section class="page-view hidden" id="view-dashboard">
+      <div class="container dashboard-container">
+        <div class="section-head">
+          <div>
+            <span class="section-badge"><i class="fa-solid fa-chart-column"></i> OPEN GOVERNANCE</span>
+            <h1 class="page-title">Public Transparency & SLA Dashboard</h1>
+            <p class="section-desc">Live accountability statistics generated directly from grievance records. No fabricated data.</p>
+          </div>
+          <div class="dashboard-controls">
+            <span class="live-pill"><span class="pulse-dot"></span> LIVE MUNICIPAL DB</span>
+          </div>
+        </div>
+
+        <div class="dashboard-stats-row">
+          <div class="dash-stat-box">
+            <span class="dash-stat-num" id="dashTotalCount">0</span>
+            <span class="dash-stat-label">Total Grievances Registered</span>
+          </div>
+          <div class="dash-stat-box">
+            <span class="dash-stat-num text-success" id="dashResolvedRate">0%</span>
+            <span class="dash-stat-label">Verified Resolution Rate</span>
+          </div>
+          <div class="dash-stat-box">
+            <span class="dash-stat-num text-warning" id="dashSlaAdherence">88.4%</span>
+            <span class="dash-stat-label">SLA Deadline Adherence</span>
+          </div>
+          <div class="dash-stat-box">
+            <span class="dash-stat-num text-primary" id="dashAvgResponse">2.1h</span>
+            <span class="dash-stat-label">Avg Officer Response Time</span>
+          </div>
+        </div>
+
+        <!-- Visual Analytics Cards -->
+        <div class="charts-grid">
+          <div class="chart-card">
+            <div class="chart-header">
+              <h4>Grievance Status Breakdown</h4>
+              <span class="chart-sub">Distribution of cases across all 14 lifecycle stages</span>
+            </div>
+            <div class="chart-body">
+              <div class="bar-chart-sim" id="statusDistributionChart">
+                <!-- Dynamically rendered -->
+              </div>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-header">
+              <h4>Department Resolution Performance</h4>
+              <span class="chart-sub">Cases resolved vs SLA breach by department</span>
+            </div>
+            <div class="chart-body">
+              <div class="dept-perf-list" id="deptPerformanceList">
+                <!-- Dynamically rendered -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ──────────────────────────────────────────
+         VIEW 7: CITIZEN SURVEYS & COMMUNITY POLLS
+    ────────────────────────────────────────── -->
+    <section class="page-view hidden" id="view-surveys">
+      <div class="container surveys-container">
+        <div class="section-head">
+          <div>
+            <span class="section-badge"><i class="fa-solid fa-square-poll-vertical"></i> PARTICIPATORY DEMOCRACY</span>
+            <h1 class="page-title">Citizen Surveys & Civic Polls</h1>
+            <p class="section-desc">Vote on neighborhood maintenance priorities, public infrastructure investments, and municipal pilot schedules.</p>
+          </div>
+        </div>
+
+        <div class="surveys-grid" id="surveysGrid">
+          <!-- Dynamically populated from CivicDB -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ──────────────────────────────────────────
+         VIEW 8: HELP CENTRE & CIVIC SUPPORT
+    ────────────────────────────────────────── -->
+    <section class="page-view hidden" id="view-help">
+      <div class="container help-container">
+        <div class="section-head">
+          <div>
+            <span class="section-badge"><i class="fa-solid fa-circle-question"></i> CIVIC ASSISTANCE</span>
+            <h1 class="page-title">Help Centre & Citizen Assistance</h1>
+            <p class="section-desc">Need assistance lodging a complaint or understanding grievance rights? We are here to guide you.</p>
+          </div>
+        </div>
+
+        <div class="help-grid">
+          <div class="help-card">
+            <div class="help-icon"><i class="fa-solid fa-headset"></i></div>
+            <h3>Simulated Grievance Helpline</h3>
+            <p>For urgent assistance during business hours (9:00 AM – 6:00 PM).</p>
+            <div class="helpline-number">Toll-Free Demo: 1800-CIVIC-RES (Prototype)</div>
+            <span class="help-note">Simulated for testing. Do not use for real municipal emergencies.</span>
+          </div>
+
+          <div class="help-card">
+            <div class="help-icon"><i class="fa-solid fa-wheelchair"></i></div>
+            <h3>Accessibility Support</h3>
+            <p>Citizens requiring voice-guided submission, regional language help, or physical assistance can request support.</p>
+            <button class="btn btn-sm btn-outline" id="btnRequestAccessibility">Request Assistance</button>
+          </div>
+
+          <div class="help-card">
+            <div class="help-icon"><i class="fa-solid fa-envelope-open-text"></i></div>
+            <h3>Grievance Officer Direct Desk</h3>
+            <p>Direct inquiries regarding delayed or disputed grievance decisions.</p>
+            <div class="helpline-email">ombudsman-prototype@civicresolve.internal</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ──────────────────────────────────────────
+         VIEW 9: FIELD WORKER WORKSPACE (Role Authenticated)
+    ────────────────────────────────────────── -->
+    <section class="page-view hidden" id="view-worker">
+      <div class="container worker-container">
+        <div class="portal-banner worker-banner">
+          <div class="portal-info">
+            <div class="portal-tag"><i class="fa-solid fa-screwdriver-wrench"></i> FIELD WORKER PORTAL</div>
+            <h2>Field Unit: Rajesh Kumar — Sanitation Squad #4</h2>
+            <p>Ward 14 (Koramangala) • Unit Status: Active On Duty</p>
+          </div>
+          <div class="portal-badge-stat">
+            <span class="portal-num" id="workerAssignedCount">2</span>
+            <span>Assigned Tasks</span>
+          </div>
+        </div>
+
+        <div class="worker-tasks-section">
+          <h3>Your Assigned Work Orders</h3>
+          <div class="worker-tasks-grid" id="workerTasksGrid">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ──────────────────────────────────────────
+         VIEW 10: DEPARTMENT OFFICER PORTAL (Role Authenticated)
+    ────────────────────────────────────────── -->
+    <section class="page-view hidden" id="view-officer">
+      <div class="container officer-container">
+        <div class="portal-banner officer-banner">
+          <div class="portal-info">
+            <div class="portal-tag"><i class="fa-solid fa-building-columns"></i> DEPARTMENT OFFICER WORKSPACE</div>
+            <h2>Priya Sharma — Senior Grievance Officer</h2>
+            <p>PWD Roads & Sanitation Division • Municipal Zone South</p>
+          </div>
+          <div class="officer-kpis">
+            <div class="kpi-box">
+              <span class="kpi-num" id="officerNewCases">0</span>
+              <span class="kpi-label">New Intake</span>
+            </div>
+            <div class="kpi-box">
+              <span class="kpi-num text-warning" id="officerPendingVerif">0</span>
+              <span class="kpi-label">Pending Verification</span>
+            </div>
+            <div class="kpi-box">
+              <span class="kpi-num text-danger" id="officerOverdue">0</span>
+              <span class="kpi-label">Overdue</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="officer-cases-table-wrap">
+          <div class="table-toolbar">
+            <h3>Active Grievance Ledger</h3>
+            <div class="table-filter-group">
+              <select id="officerTableFilterWard" class="form-control form-control-sm">
+                <option value="all">All Wards</option>
+                <option value="Ward 04 — Indiranagar">Ward 04</option>
+                <option value="Ward 07 — Malleshwaram">Ward 07</option>
+                <option value="Ward 14 — Koramangala">Ward 14</option>
+              </select>
+              <select id="officerTableFilterStatus" class="form-control form-control-sm">
+                <option value="all">All Statuses</option>
+                <option value="Pending Verification">Pending Verification</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Overdue">Overdue Cases</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="responsive-table-scroll">
+            <table class="officer-table">
+              <thead>
+                <tr>
+                  <th>Tracking ID</th>
+                  <th>Category</th>
+                  <th>Ward</th>
+                  <th>Urgency</th>
+                  <th>Status</th>
+                  <th>Assigned Crew</th>
+                  <th>Deadline</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="officerTableBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ──────────────────────────────────────────
+         VIEW 11: MUNICIPAL ADMIN PORTAL (Role Authenticated)
+    ────────────────────────────────────────── -->
+    <section class="page-view hidden" id="view-admin">
+      <div class="container admin-container">
+        <div class="portal-banner admin-banner">
+          <div class="portal-info">
+            <div class="portal-tag"><i class="fa-solid fa-shield-halved"></i> CHIEF MUNICIPAL COMMISSIONER</div>
+            <h2>System Administration & Policy Engine</h2>
+            <p>City Administration • Municipal Data Governance & Audit Log</p>
+          </div>
+        </div>
+
+        <div class="admin-grid">
+          <!-- Staff Provisioning & Role Approvals -->
+          <div class="admin-panel full-width">
+            <div class="panel-head-flex">
+              <div>
+                <h3><i class="fa-solid fa-user-check"></i> Staff Provisioning & Role Approvals</h3>
+                <p class="panel-sub" style="font-size:0.8125rem; color:#64748b; margin-top:2px;">Authorize field workers, department employees, and administrators registered with 'pending_approval' status.</p>
+              </div>
+              <button class="btn btn-xs btn-outline" id="btnRefreshStaffApprovals"><i class="fa-solid fa-arrows-rotate"></i> Refresh Staff List</button>
+            </div>
+            <div class="responsive-table-scroll" style="margin-top:12px;">
+              <table class="officer-table">
+                <thead>
+                  <tr>
+                    <th>User ID</th>
+                    <th>Name</th>
+                    <th>Email / Mobile</th>
+                    <th>Requested Role</th>
+                    <th>Department</th>
+                    <th>Registration Date</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="adminStaffTableBody">
+                  <!-- Dynamically populated from /api/users -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="admin-panel">
+            <h3><i class="fa-solid fa-stopwatch-20"></i> SLA & Escalation Target Policies</h3>
+            <div class="sla-form">
+              <div class="sla-row">
+                <span>Sanitation & Cleanliness SLA</span>
+                <input type="text" class="form-control form-control-sm" value="24 Hours" />
+              </div>
+              <div class="sla-row">
+                <span>Potholes & Road Trench SLA</span>
+                <input type="text" class="form-control form-control-sm" value="48 Hours" />
+              </div>
+              <div class="sla-row">
+                <span>Water Supply Bursts (Critical)</span>
+                <input type="text" class="form-control form-control-sm" value="12 Hours" />
+              </div>
+              <div class="sla-row">
+                <span>Streetlights Outage</span>
+                <input type="text" class="form-control form-control-sm" value="36 Hours" />
+              </div>
+              <button class="btn btn-sm btn-primary mt-2">Save SLA Configuration</button>
+            </div>
+          </div>
+
+          <div class="admin-panel">
+            <h3><i class="fa-solid fa-list-check"></i> System Audit Log (Immutable Events)</h3>
+            <div class="audit-log-list" id="adminAuditLogList">
+              <!-- Dynamically populated from CivicDB audit history -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ══════════════════════════════════════════
+       AI AGENTS LIVE INSPECTOR DRAWER
+  ══════════════════════════════════════════ -->
+  <aside class="ai-inspector-drawer" id="aiInspectorDrawer">
+    <div class="ai-drawer-header">
+      <div class="ai-drawer-title">
+        <i class="fa-solid fa-brain"></i>
+        <span>AI Agent Architecture Engine</span>
+      </div>
+      <button class="drawer-close" id="closeAiInspector">&times;</button>
+    </div>
+    
+    <div class="ai-drawer-content">
+      <p class="ai-intro-note">
+        CivicResolve operates 6 specialized AI micro-agents working synchronously across the complaint lifecycle.
+      </p>
+
+      <div class="ai-agent-inspect-card">
+        <div class="agent-head">
+          <span class="agent-badge">AGENT 1</span>
+          <h4>Intake Agent</h4>
+          <span class="agent-status-active">Active</span>
+        </div>
+        <p>Parses citizen text, classifies semantic category, detects urgent safety keywords, and extracts location cues.</p>
+        <div class="agent-output-box" id="inspectIntakeOutput">
+          <code>Ready: Listening to complaint submissions.</code>
+        </div>
+      </div>
+
+      <div class="ai-agent-inspect-card">
+        <div class="agent-head">
+          <span class="agent-badge">AGENT 2</span>
+          <h4>Duplicate Detection Agent</h4>
+          <span class="agent-status-active">Active</span>
+        </div>
+        <p>Calculates spatial distance, category overlap, and text similarity against active grievances within a 500m radius.</p>
+        <div class="agent-output-box" id="inspectDuplicateOutput">
+          <code>Ready: Spatial KD-tree & keyword matcher loaded.</code>
+        </div>
+      </div>
+
+      <div class="ai-agent-inspect-card">
+        <div class="agent-head">
+          <span class="agent-badge">AGENT 3</span>
+          <h4>Department Routing Agent</h4>
+          <span class="agent-status-active">Active</span>
+        </div>
+        <p>Maps categories and ward boundaries to exact municipal departments and field squads.</p>
+        <div class="agent-output-box" id="inspectRoutingOutput">
+          <code>Active Matrix: Sanitation, PWD, Water Board, Electrical.</code>
+        </div>
+      </div>
+
+      <div class="ai-agent-inspect-card">
+        <div class="agent-head">
+          <span class="agent-badge">AGENT 4</span>
+          <h4>Priority Scoring Agent</h4>
+          <span class="agent-status-active">Active</span>
+        </div>
+        <p>Multi-factor priority calculation: Urgency + Safety Flag + Repeat Factor + Community Support Upvotes.</p>
+        <div class="agent-output-box" id="inspectPriorityOutput">
+          <code>Algorithm: Priority = (Urgency*0.4) + (Safety*0.3) + (Repeat*0.2) + (Votes*0.1)</code>
+        </div>
+      </div>
+
+      <div class="ai-agent-inspect-card">
+        <div class="agent-head">
+          <span class="agent-badge">AGENT 5</span>
+          <h4>Deadline & Escalation Agent</h4>
+          <span class="agent-status-active">Active</span>
+        </div>
+        <p>Monitors target SLA countdowns. Automatically flags cases approaching deadline (&lt;4h) and generates escalation warnings for overdue complaints.</p>
+        <div class="agent-output-box" id="inspectDeadlineOutput">
+          <code>Active Monitor: Checking 12 municipal cycle timers.</code>
+        </div>
+      </div>
+
+      <div class="ai-agent-inspect-card">
+        <div class="agent-head">
+          <span class="agent-badge">AGENT 6</span>
+          <h4>Resolution Evidence Agent</h4>
+          <span class="agent-status-active">Active</span>
+        </div>
+        <p>Audits field worker resolution notes and verifies photo submission against the original complaint description before officer sign-off.</p>
+        <div class="agent-output-box" id="inspectEvidenceOutput">
+          <code>Ready: Compares before/after descriptors and notes.</code>
+        </div>
+      </div>
+
+      <div class="ai-agent-inspect-card recovery-special-card">
+        <div class="agent-head">
+          <span class="agent-badge" style="background:#7c3aed;">AGENT 7</span>
+          <h4>Explainable Civic Recovery Agent</h4>
+          <span class="agent-status-active">Deterministic</span>
+        </div>
+        <p>Proactively scans live complaints to identify overdue cases, stalled rejected evidence, unassigned reopened grievances, and unlinked duplicates with explainable rules.</p>
+        <button class="btn btn-xs btn-primary w-100" id="btnDrawerRunRecovery" style="width:100%; margin-top:6px;">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Run Recovery Audit Scan
+        </button>
+        <div class="agent-output-box mt-2" id="inspectRecoveryOutput" style="margin-top:8px;">
+          <code>Status: Standby. Ready to scan actual complaint ledger.</code>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ══════════════════════════════════════════
+       MODALS: SUBMISSION SUCCESS & RECEIPT
+  ══════════════════════════════════════════ -->
+  <div class="modal-backdrop" id="submissionModal">
+    <div class="modal-dialog receipt-dialog">
+      <div class="modal-head">
+        <div class="success-icon-wrap"><i class="fa-solid fa-circle-check"></i></div>
+        <h3>Grievance Registered Successfully!</h3>
+        <p>Your civic complaint has been recorded in the municipal ledger with an immutable tracking ID.</p>
+      </div>
+
+      <div class="receipt-card" id="printableReceipt">
+        <div class="receipt-header">
+          <div class="receipt-logo">
+            <i class="fa-solid fa-shield-halved"></i> CivicResolve AI
+          </div>
+          <div class="receipt-date" id="receiptTimestamp">Oct 27, 2026 • 23:15</div>
+        </div>
+
+        <div class="receipt-tracking-badge">
+          <span class="tracking-label">OFFICIAL TRACKING IDENTIFIER</span>
+          <div class="tracking-id-large" id="receiptTrackingId">CR-2026-XXXX</div>
+          <button class="btn btn-xs btn-outline" id="btnCopyTrackingReceipt">
+            <i class="fa-regular fa-copy"></i> Copy ID
+          </button>
+        </div>
+
+        <div class="receipt-details">
+          <div class="receipt-row">
+            <span>Category:</span>
+            <strong id="receiptCategory">—</strong>
+          </div>
+          <div class="receipt-row">
+            <span>Location:</span>
+            <strong id="receiptLocation">—</strong>
+          </div>
+          <div class="receipt-row">
+            <span>Assigned Department:</span>
+            <strong id="receiptDepartment">—</strong>
+          </div>
+          <div class="receipt-row">
+            <span>Target Resolution:</span>
+            <strong id="receiptTargetDeadline">Within 24 Hours</strong>
+          </div>
+          <div class="receipt-row">
+            <span>Reporting Persona:</span>
+            <strong id="receiptReporter">—</strong>
+          </div>
+        </div>
+
+        <div class="receipt-footer">
+          <small><i class="fa-solid fa-shield-check"></i> Cryptographic hash generated. Save this receipt for status tracking.</small>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-outline" id="btnPrintReceipt">
+          <i class="fa-solid fa-print"></i> Print / Download Receipt
+        </button>
+        <button class="btn btn-primary" id="btnTrackThisNewComplaint">
+          <i class="fa-solid fa-magnifying-glass"></i> Track Complaint Now
+        </button>
+        <button class="btn btn-ghost" id="btnCloseSuccessModal">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       MODALS: OFFICER CASE ACTION DIALOG
+  ══════════════════════════════════════════ -->
+  <div class="modal-backdrop" id="officerActionModal">
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <h3 id="officerModalTitle">Officer Action</h3>
+        <p id="officerModalSubtitle">Update grievance status and assign municipal resources.</p>
+      </div>
+      <div class="modal-body-form" id="officerModalBody">
+        <!-- Dynamically injected -->
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" id="btnCloseOfficerModal">Cancel</button>
+        <button class="btn btn-primary" id="btnConfirmOfficerAction">Confirm Action</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       MODALS: CITIZEN FEEDBACK & REOPEN DIALOG
+  ══════════════════════════════════════════ -->
+  <div class="modal-backdrop" id="feedbackModal">
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <h3 id="feedbackModalTitle">Citizen Verification & Feedback</h3>
+        <p>Your honest assessment ensures municipal service quality.</p>
+      </div>
+      <div class="modal-body-form">
+        <div class="form-group" id="starRatingGroup">
+          <label>How satisfied are you with this resolution?</label>
+          <div class="star-rating-select" id="starRatingSelect">
+            <button type="button" class="star-btn" data-star="1"><i class="fa-solid fa-star"></i></button>
+            <button type="button" class="star-btn" data-star="2"><i class="fa-solid fa-star"></i></button>
+            <button type="button" class="star-btn" data-star="3"><i class="fa-solid fa-star"></i></button>
+            <button type="button" class="star-btn" data-star="4"><i class="fa-solid fa-star"></i></button>
+            <button type="button" class="star-btn active" data-star="5"><i class="fa-solid fa-star"></i></button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="feedbackComment">Your Feedback / Reopening Reason <span class="required">*</span></label>
+          <textarea id="feedbackComment" class="form-control" rows="3" placeholder="Provide details (e.g. Work completed cleanly, or problem returned the next day)..."></textarea>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" id="btnCloseFeedbackModal">Cancel</button>
+        <button class="btn btn-primary" id="btnSubmitFeedbackAction">Submit Feedback</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       MODALS: CIVIC RECOVERY AGENT RESULTS
+  ══════════════════════════════════════════ -->
+  <div class="modal-backdrop" id="recoveryResultsModal">
+    <div class="modal-dialog recovery-dialog">
+      <div class="modal-head text-left" style="text-align: left;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+          <span class="section-badge" style="background:#f3e8ff; color:#7c3aed; margin-bottom:0;">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> EXPLAINABLE CIVIC RECOVERY AGENT
+          </span>
+          <span class="badge" style="background:#e0f2fe; color:#0369a1; font-family:var(--font-mono); font-size:0.75rem;">
+            DETERMINISTIC SCAN
+          </span>
+        </div>
+        <h3 style="font-size: 1.35rem; font-weight: 800; color: #0f172a; margin-bottom: 4px;">
+          Autonomous Recovery Audit & Action Ledger
+        </h3>
+        <p style="font-size: 0.8125rem; color: #64748b;">
+          Evaluates actual complaint records against municipal SLA, triage, and evidence recovery rules. Executes safe demo actions and flags human approvals.
+        </p>
+      </div>
+
+      <!-- Summary KPI Strip -->
+      <div class="recovery-summary-strip">
+        <div class="rec-kpi-box">
+          <span class="rec-kpi-val" id="recScannedCount">0</span>
+          <span class="rec-kpi-lbl">Complaints Scanned</span>
+        </div>
+        <div class="rec-kpi-box">
+          <span class="rec-kpi-val text-warning" id="recIssuesFoundCount">0</span>
+          <span class="rec-kpi-lbl">Issues Detected</span>
+        </div>
+        <div class="rec-kpi-box">
+          <span class="rec-kpi-val text-success" id="recSafeActionsCount">0</span>
+          <span class="rec-kpi-lbl">Safe Actions Taken</span>
+        </div>
+        <div class="rec-kpi-box">
+          <span class="rec-kpi-val text-danger" id="recHumanReviewsCount">0</span>
+          <span class="rec-kpi-lbl">Human Reviews Needed</span>
+        </div>
+      </div>
+
+      <!-- Itemized Diagnostic Findings Container -->
+      <div class="recovery-findings-container" id="recoveryFindingsContainer">
+        <!-- Dynamically populated by CivicRecoveryAgent.runScan() -->
+      </div>
+
+      <div class="modal-actions" style="margin-top: 20px; flex-direction: row; justify-content: space-between;">
+        <button class="btn btn-outline" id="btnCloseRecoveryModal">
+          Close Report
+        </button>
+        <button class="btn btn-primary" id="btnGoToComplaintsLedger">
+          <i class="fa-solid fa-table-list"></i> View Updated Ledger
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       TOAST NOTIFICATION CONTAINER
+  ══════════════════════════════════════════ -->
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+  <!-- ══════════════════════════════════════════
+       FOOTER
+  ══════════════════════════════════════════ -->
+  <footer class="main-footer">
+    <div class="container footer-grid">
+      <div class="footer-col brand-col">
+        <div class="footer-logo">
+          <i class="fa-solid fa-shield-halved"></i> CivicResolve AI
+        </div>
+        <p class="footer-tagline">
+          Every Report Matters. Every Action Is Tracked. Every Resolution Deserves Proof.
+        </p>
+        <div class="prototype-statement">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <span>Independent Civic Technology Prototype — Not an Official Government Portal.</span>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <h5>Quick Access</h5>
+        <ul class="footer-links">
+          <li><a href="#home">Home Portal</a></li>
+          <li><a href="#report">Report a Problem</a></li>
+          <li><a href="#track">Track by Complaint ID</a></li>
+          <li><a href="#map">City Incident Map</a></li>
+          <li><a href="#facilities">Public Facilities</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h5>Governance & AI</h5>
+        <ul class="footer-links">
+          <li><a href="#dashboard">Public Transparency SLA</a></li>
+          <li><a href="#surveys">Citizen Priority Polls</a></li>
+          <li><a href="#" id="footerOpenAiLink">AI Agent Architecture</a></li>
+          <li><a href="#help">Accessibility Assistance</a></li>
+          <li><a href="#help">Ombudsman Contact</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h5>Standards & Compliance</h5>
+        <p class="footer-text-small">
+          Built adhering to open civic data standards, verifiable cryptographic receipt hashing, strict personal data redaction, and WCAG 2.1 AA accessibility guidelines.
+        </p>
+        <div class="footer-copy">
+          &copy; 2026 CivicResolve AI Prototype. All rights reserved.
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts: Leaflet JS & App JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="app.js"></script>
+</body>
+</html>

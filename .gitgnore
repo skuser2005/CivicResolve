@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Environment secrets
+.env
+.env.*
+
+# Local database
+*.db
+*.sqlite
+*.sqlite3
+
+# User uploads
+uploads/*
+!uploads/.gitkeep
+
+# macOS / VS Code
+.DS_Store
+.vscode/
