@@ -5128,3 +5128,432 @@ header {
   }
 }
 
+
+
+/* =========================================
+   CIVICRESOLVE AI — RESPONSIVE DESIGN
+   Mobile, Tablet, Laptop & Desktop
+   ========================================= */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+  scroll-behavior: smooth;
+}
+
+body {
+  width: 100%;
+  min-width: 320px;
+  margin: 0;
+  overflow-x: clip;
+  -webkit-text-size-adjust: 100%;
+}
+
+img,
+video,
+iframe,
+canvas,
+svg {
+  max-width: 100%;
+}
+
+img,
+video {
+  height: auto;
+}
+
+input,
+select,
+textarea,
+button {
+  max-width: 100%;
+  font: inherit;
+}
+
+button,
+.btn,
+a {
+  touch-action: manipulation;
+}
+
+button,
+.btn {
+  min-height: 40px;
+}
+
+/* Main page containers */
+.container,
+.main-content,
+.page-content,
+.dashboard-container {
+  width: 100%;
+  max-width: 1440px;
+  min-width: 0;
+  margin-inline: auto;
+  padding-inline: clamp(12px, 2vw, 28px);
+}
+
+.page-view,
+.page-view > *,
+.dashboard-grid,
+.content-grid {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Cards and dashboard layouts */
+.stats-grid,
+.dashboard-grid,
+.cards-grid,
+.facilities-grid,
+.incidents-grid,
+.analytics-grid {
+  display: grid;
+  grid-template-columns:
+    repeat( auto-fit, minmax(min(100%, 240px), 1fr) );
+  gap: 16px;
+}
+
+.card,
+.stat-card,
+.panel,
+.incident-card,
+.facility-card {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-container,
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+pre,
+code {
+  overflow-wrap: anywhere;
+}
+
+/* Forms */
+form,
+.form-grid {
+  min-width: 0;
+  max-width: 100%;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  min-width: 0;
+}
+
+textarea {
+  resize: vertical;
+}
+
+button,
+.btn {
+  cursor: pointer;
+}
+
+/* Maps */
+#cityMap,
+#facilitiesMap,
+#pickerMap,
+.leaflet-container {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+#cityMap,
+#facilitiesMap {
+  min-height: 280px;
+}
+
+/* Desktop navigation */
+#mobileNav {
+  display: none;
+}
+
+/* =========================================
+   TABLETS — 768px to 1024px
+   ========================================= */
+@media (max-width: 1024px) {
+  .container,
+  .main-content,
+  .page-content,
+  .dashboard-container {
+    padding-inline: 16px;
+  }
+
+  .stats-grid,
+  .dashboard-grid,
+  .cards-grid,
+  .facilities-grid,
+  .incidents-grid,
+  .analytics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .sidebar {
+    max-width: 100%;
+  }
+
+  .dashboard-layout,
+  .content-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .page-title {
+    font-size: clamp(1.4rem, 3vw, 2rem);
+  }
+}
+
+/* =========================================
+   MOBILE — 767px and below
+   ========================================= */
+@media (max-width: 767px) {
+  body {
+    font-size: 14px;
+  }
+
+  .container,
+  .main-content,
+  .page-content,
+  .dashboard-container {
+    padding-inline: 12px;
+  }
+
+  /* Header */
+  header,
+  .main-header,
+  .topbar {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .header-actions {
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  /* Hide desktop navigation links */
+  .nav-links,
+  .desktop-nav {
+    display: none;
+  }
+
+  /* Hamburger button */
+  #hamburgerBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Mobile navigation drawer/menu */
+  #mobileNav {
+    display: none;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  #mobileNav.open {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  #mobileNav a,
+  #mobileNav .mobile-link {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 10px 12px;
+    overflow-wrap: anywhere;
+  }
+
+  /* Single-column dashboard */
+  .stats-grid,
+  .dashboard-grid,
+  .cards-grid,
+  .facilities-grid,
+  .incidents-grid,
+  .analytics-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  /* Dashboard headings */
+  h1,
+  .page-title {
+    font-size: clamp(1.45rem, 6vw, 2rem);
+    line-height: 1.25;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+  }
+
+  h3 {
+    font-size: 1.05rem;
+  }
+
+  /* Stack toolbars and action groups */
+  .toolbar,
+  .filter-bar,
+  .section-header,
+  .card-header,
+  .action-buttons {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .action-buttons > button,
+  .action-buttons > .btn {
+    flex: 1 1 auto;
+  }
+
+  /* Buttons */
+  .btn,
+  button {
+    max-width: 100%;
+  }
+
+  /* Forms */
+  .form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+  /* Complaint details */
+  .complaint-details,
+  .case-details,
+  .incident-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Maps */
+  #cityMap,
+  #facilitiesMap,
+  #pickerMap {
+    min-height: 260px;
+  }
+
+  /* Drawers */
+  #notifDrawer,
+  #aiInspectorDrawer {
+    width: min(92vw, 420px);
+    max-width: 100%;
+  }
+
+  /* Footer */
+  footer,
+  .footer-content {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  /* Prevent long IDs and URLs from breaking layout */
+  p,
+  span,
+  strong,
+  td,
+  th,
+  a {
+    overflow-wrap: anywhere;
+  }
+}
+
+/* =========================================
+   SMALL MOBILE — 480px and below
+   ========================================= */
+@media (max-width: 480px) {
+  .container,
+  .main-content,
+  .page-content,
+  .dashboard-container {
+    padding-inline: 10px;
+  }
+
+  .card,
+  .stat-card,
+  .panel,
+  .incident-card,
+  .facility-card {
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .stats-grid,
+  .dashboard-grid,
+  .cards-grid,
+  .facilities-grid,
+  .incidents-grid,
+  .analytics-grid {
+    gap: 10px;
+  }
+
+  .btn,
+  button {
+    padding: 10px 12px;
+  }
+
+  .header-actions {
+    width: 100%;
+  }
+
+  .page-header,
+  .section-header {
+    align-items: flex-start;
+  }
+
+  #notifDrawer,
+  #aiInspectorDrawer {
+    width: 100%;
+  }
+
+  .chart-container,
+  .chart-wrapper {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+}
+
+/* =========================================
+   ACCESSIBILITY
+   ========================================= */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
