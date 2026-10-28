@@ -5055,3 +5055,76 @@ body {
 }
 
 
+/* Fix horizontal overflow */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  overflow-x: clip;
+}
+
+img,
+iframe,
+video {
+  max-width: 100%;
+}
+
+/* Keep navbar inside the screen */
+nav,
+.navbar,
+header {
+  max-width: 100%;
+}
+
+.navbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+/* Prevent navigation items from forcing extra width */
+.navbar a,
+.navbar button {
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* Keep page sections inside the viewport */
+.container,
+.main-content,
+.page-content {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* Responsive layout */
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .navbar a,
+  .navbar button {
+    width: 100%;
+  }
+
+  .container,
+  .main-content,
+  .page-content {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+
